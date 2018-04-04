@@ -172,6 +172,8 @@ namespace Perceptron
                 for (int i = 0; i < exp; i++)
                 {
                     double d = Double.Parse(dataGridView1.Rows[i].Cells[dataGridView1.ColumnCount - 1].Value.ToString());
+                    double u;
+                    double y;
 
                     double[] arrayX = new double[count];
                     for (int j = 0; j < count; j++)
@@ -179,7 +181,8 @@ namespace Perceptron
                         arrayX[j] = x[i, j];
                     }
 
-                    double y = getY(getU(arrayX, w));
+                    u = getU(arrayX, w);
+                    y = getY(u);
 
                     while (d != y)
                     {
@@ -189,10 +192,17 @@ namespace Perceptron
                             if (x[i, j] != 0)
                             {
                                 w[j] += d - y;
-                                y = getY(getU(i, x, w));
+                                u = getU(i, x, w);
+                                y = getY(u);
+                            }
+                            else
+                            {
+                                // j++;
                             }
                         }
                     }
+                    dataGridView1.Rows[i].Cells[dataGridView1.ColumnCount - 3].Value = u;
+                    dataGridView1.Rows[i].Cells[dataGridView1.ColumnCount - 2].Value = y;
                 }
             } while (cycle);
 
@@ -220,13 +230,13 @@ namespace Perceptron
 
         private void button1_Click(object sender, EventArgs e)
         {
-            // DEBUG DATA
-            debugData();
-
             clearData();
             writeLine("Таблица очищена");
             buildTable();
             writeLine("Таблица построена");
+
+            // DEBUG DATA
+            debugData();
         }
 
         private void button2_Click(object sender, EventArgs e)
