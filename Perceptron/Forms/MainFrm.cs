@@ -55,6 +55,29 @@ namespace Perceptron
             dataGridView1.Rows.Clear();
         }
 
+        private bool checkEnterDataOnTable()
+        {
+            // Возвращает, заполнены ли все входные данные в таблице
+            bool result = true;
+            for (int i = 0; i < dataGridView1.Rows.Count - 1; i++)
+            {
+                if (dataGridView1.Rows[i].Cells[dataGridView1.ColumnCount - 1].Value == null)
+                {
+                    result = false;
+                    return result;
+                }
+                for (int j = 1; j < dataGridView1.ColumnCount - 3; j++)
+                {
+                    if (dataGridView1.Rows[i].Cells[j].Value == null)
+                    {
+                        result = false;
+                        return result;
+                    }
+                }
+            }
+            return result;
+        }
+
         private string getCurentTime()
         {
             // Возвращает текущее время
@@ -67,22 +90,123 @@ namespace Perceptron
             Console.WriteLine(getCurentTime() + " " + text);
         }
 
-        private bool checkEnterDataOnTable()
+        private double getRandomNumber()
         {
-            // Возвращает, заполнены ли все входные данные в таблице
-            bool result = true;
-            for (int i = 0; i < dataGridView1.Rows.Count - 1; i++)
+            int minValue = -10;
+            int maxValue = 10;
+            Random rand = new Random();
+            return rand.Next(minValue, maxValue);
+        }
+
+        private double getU(double[] x, double[] w)
+        {
+            double u = 0;
+            for (int i = 0; i < x.Count(); i++)
             {
-                for (int j = 1; j < dataGridView1.ColumnCount - 3; j++)
+                u += x[i] * w[i];
+            }
+            return u;
+        }
+
+        private double getU(int row, double[,] x, double[] w)
+        {
+            double u = 0;
+            for (int i = 0; i < x.GetLength(1); i++)
+            {
+                u += x[row, i] * w[i];
+            }
+            return u;
+        }
+
+        private double getY(double u)
+        {
+            double y;
+            if (u < 0)
+            {
+                y = 0;
+            }
+            else
+            {
+                y = 1;
+            }
+            return y;
+        }
+
+        private void persectron()
+        {
+            int count = dataGridView1.ColumnCount - 3;
+            int exp = dataGridView1.Rows.Count - 1;
+
+            double[,] x = new double[exp, count];
+            double[] w = new double[count];
+
+            // Заполняем массив входов
+            for (int i = 0; i < exp; i++)
+            {
+                x[i, 0] = 1;
+                for (int j = 1; j < count; j++)
                 {
-                    if (dataGridView1.Rows[i].Cells[j].Value == null)
-                    {
-                        result = false;
-                        return result;
-                    }
+                    x[i, j] = Convert.ToDouble(dataGridView1.Rows[i].Cells[j].Value.ToString());
                 }
             }
-            return result;
+
+            // Проверка заполнения массива
+            for (int i = 0; i < exp; i++)
+            {
+                for (int j = 0; j < count; j++)
+                {
+                    Console.WriteLine("x[{0}, {1}] = {2}", i, j, x[i, j]);  
+                }
+            }
+
+            // Заполняем раздомными значениями веса
+            for (int i = 0; i < count; i++)
+            {
+                w[i] = getRandomNumber();
+            }
+
+            bool cycle;
+            do
+            {
+                cycle = false;
+                for (int i = 0; i < exp; i++)
+                {
+                    double d = Double.Parse(dataGridView1.Rows[i].Cells[dataGridView1.ColumnCount - 1].Value.ToString());
+
+                    double[] arrayX = new double[count];
+                    for (int j = 0; j < count; j++)
+                    {
+                        arrayX[j] = x[i, j];
+                    }
+
+                    double y = getY(getU(arrayX, w));
+
+                    while (d != y)
+                    {
+                        cycle = true;
+                        for (int j = 0; j < count; j++)
+                        {
+                            if (x[i, j] != 0)
+                            {
+                                w[j] += d - y;
+                                y = getY(getU(i, x, w));
+                            }
+                        }
+                    }
+                }
+            } while (cycle);
+
+
+            for (int i = 0; i < count; i++)
+            {
+                Console.WriteLine("w{0} = {1}", i, w[i]);
+            }
+
+        }
+
+        private void debugData()
+        {
+
         }
 
         private void numericUpDown1_KeyPress(object sender, KeyPressEventArgs e)
@@ -96,6 +220,9 @@ namespace Perceptron
 
         private void button1_Click(object sender, EventArgs e)
         {
+            // DEBUG DATA
+            debugData();
+
             clearData();
             writeLine("Таблица очищена");
             buildTable();
@@ -105,12 +232,10 @@ namespace Perceptron
         private void button2_Click(object sender, EventArgs e)
         {
             // Выполнение алгоритма
-            int count = dataGridView1.ColumnCount - 4;
-            int exp = dataGridView1.Rows.Count;
-
             if (checkEnterDataOnTable())
             {
                 writeLine("Проверка прошла успешно");
+                persectron();
             } else
             {
                 writeLine("Данные в таблице заполнены неверно");
@@ -137,14 +262,18 @@ namespace Perceptron
 
         private void button6_Click(object sender, EventArgs e)
         {
-            // TODO: Доделать 
-            writeLine("Команта \"Убрать последний эксперемент\" пока не реализована");
+            int countExp = dataGridView1.Rows.Count - 1;
+            if (countExp > 0)
+            {
+                dataGridView1.Rows.RemoveAt(countExp - 1);
+            }
+            writeLine("Последний эксперемент удален");
         }
 
         private void button7_Click(object sender, EventArgs e)
         {
-            writeLine("Таблица очищена");
             clearData();
+            writeLine("Таблица очищена");
         }
 
         private void dataGridView1_UserAddedRow(object sender, DataGridViewRowEventArgs e)
@@ -154,5 +283,6 @@ namespace Perceptron
             int rows = dataGridView1.Rows.Count;
             dataGridView1.Rows[rows - 2].Cells[0].Value = rows - 1;
         }
+
     }
 }
