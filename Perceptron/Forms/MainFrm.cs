@@ -90,11 +90,12 @@ namespace Perceptron
             Console.WriteLine(getCurentTime() + " " + text);
         }
 
+        Random rand = new Random();
+
         private double getRandomNumber()
         {
             int minValue = -10;
             int maxValue = 10;
-            Random rand = new Random();
             return rand.Next(minValue, maxValue);
         }
 
@@ -172,34 +173,18 @@ namespace Perceptron
                 for (int i = 0; i < exp; i++)
                 {
                     double d = Double.Parse(dataGridView1.Rows[i].Cells[dataGridView1.ColumnCount - 1].Value.ToString());
-                    double u;
-                    double y;
-
-                    double[] arrayX = new double[count];
-                    for (int j = 0; j < count; j++)
-                    {
-                        arrayX[j] = x[i, j];
-                    }
-
-                    u = getU(arrayX, w);
-                    y = getY(u);
+                    double u = getU(i, x, w);
+                    double y = getY(u);
 
                     while (d != y)
                     {
                         cycle = true;
+
                         for (int j = 0; j < count; j++)
                         {
-                            if (x[i, j] != 0)
-                            {
-                                w[j] += d - y;
-                                u = getU(i, x, w);
-                                y = getY(u);
-                            }
-                            else
-                            {
-                                // j++;
-                            }
+                            w[j] += x[i, j] * (d - y);
                         }
+                        y = getY(getU(i, x, w));
                     }
                     dataGridView1.Rows[i].Cells[dataGridView1.ColumnCount - 3].Value = u;
                     dataGridView1.Rows[i].Cells[dataGridView1.ColumnCount - 2].Value = y;
